@@ -1,0 +1,45 @@
+PROGRAM → FUNC PROGRAM
+        | FUNC eof
+
+FUNC    → "func" RTYPE ":" id "(" PARAMS ")" STMNT
+
+RTYPE   → "void"
+        | "int"
+
+PARAMS  → id "," PARAMS
+        | id
+		| empty
+
+STMNT   → "{" STMNTS "}"
+        | "return" EXPR ";"
+        | "var" id "=" EXPR ";"
+        | "if" "(" EXPR ")" STMNT
+        | EXPR ";"
+        | ";"
+
+STMNTS  → STMNT STMNTS
+        | STMNT
+
+EXPR    → "op" EXPR "*" EXPR
+        | "op" EXPR "/" EXPR
+        | "op" EXPR "+" EXPR
+        | "op" EXPR "-" EXPR
+        | "op" EXPR "==" EXPR
+        | "op" EXPR "<" EXPR
+        | "op" EXPR ">" EXPR
+        | "op" EXPR "!=" EXPR
+        | ( EXPR )
+        | id "=" EXPR
+        | id "(" ARGS ")"
+        | id
+        | string
+        | number
+
+ARGS    → EXPR "," ARGS
+        | EXPR
+        | empty
+
+string is any char seq in ""
+id is any char seq not maching other rules
+ referes to some function or variable
+
