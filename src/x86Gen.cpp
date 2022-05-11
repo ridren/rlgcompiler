@@ -3,11 +3,14 @@
 
 #include "tac.h"
 
+#include <iostream>
+
 int find_Next_Func(std::vector<TAC_Stmnt>& stmnts); //definition in TACOpt.cpp
 std::string translate_Func(std::vector<TAC_Stmnt>& stmnts, int range_left, int range_right);
 
 extern unsigned int last_checked;
-bool is_main = false;
+
+bool main_exists = false;
 
 std::string x86_Gen(std::vector<TAC_Stmnt>& stmnts)
 {
@@ -17,22 +20,22 @@ std::string x86_Gen(std::vector<TAC_Stmnt>& stmnts)
 	int f_range_right = find_Next_Func(stmnts);
 	
 	std::string output;
-
+	
 	//translates one func at a time
 	while(f_range_left != f_range_right)
 	{
 		if(stmnts[f_range_left].str == "Fmain")
-			is_main = true;
-		else
-			is_main = false;
-			
+			main_exists = true;
+		
 		output += translate_Func(stmnts, f_range_left, f_range_right);
-			
 
 		last_checked = f_range_right;
 		f_range_left = last_checked ;
 		f_range_right = find_Next_Func(stmnts);
 	}
+
+	if(!main_exists)
+		output += "Fmain:\n\tmov \trax, 1\n\tret\n";
 
 	return output;
 }
@@ -49,8 +52,13 @@ std::string translate_Func(std::vector<TAC_Stmnt>& stmnts, int range_left, int r
 		switch(stmnt.tt)
 		{
 		case TAC_Type::label:
-			if(i == range_right) break;
+			if(i == range_right && stmnt.str[0] != 'L') break;
 			output += stmnt.str + ":\n";
+			
+			//add nop if label is last
+			if(i == range_right && stmnt.str[0] == 'L') 
+				output += "\tnop\n";
+
 			break;
 		case TAC_Type::assig:
 		//get consts if assig is in form TX = CONST
@@ -249,14 +257,7 @@ std::string translate_Func(std::vector<TAC_Stmnt>& stmnts, int range_left, int r
 			else
 				output += get_Reg_From_Num(stmnt.src1) + '\n';
 
-			if(!is_main)
-				output += "\tret\n";
-			else
-			{
-				output += "\tmov \trdi, rax\n"
-				          "\tmov \trax, 60\n"
-				          "\tsyscall\n";
-			}
+			output += "\tret\n";
 			break;
 
 		case TAC_Type::ifblk:

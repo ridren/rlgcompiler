@@ -3,8 +3,7 @@
 
 #include "token.h"
 
-//requires TOKEN_DEBUG to be 1
-#define NODE_DEBUG 1 
+#define NODE_DEBUG TOKEN_DEBUG & 1 
 
 enum class Node_Type : char{
 	prog,

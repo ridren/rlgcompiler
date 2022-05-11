@@ -68,6 +68,11 @@ void optimize(std::vector<TAC_Stmnt>& stmnts)
 
 		l_range_right = f_range_right;
 
+		//if procedure get optimized to no stmnt, insert nop
+		if(f_range_left == f_range_right)
+			stmnts.emplace(stmnts.begin() + f_range_left + 1, 0, 0, TAC_REG);
+		f_range_right++;
+
 		//ensures that we only work in simple blocks that have no jump in jump out
 		//greately simplifies optimization
 		last_checked = f_range_right;

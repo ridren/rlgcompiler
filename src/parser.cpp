@@ -408,6 +408,11 @@ Node* check_Stmns()
 		{
 			stmnts->children.emplace_back(child);
 		}
+		else
+		{
+			report_Error("INVALID STMNT", tokens[cur_token].line_num);
+			return stmnts;
+		}
 
 	}
 	return stmnts;

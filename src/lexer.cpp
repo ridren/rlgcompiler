@@ -104,7 +104,7 @@ std::ostream& operator<<(std::ostream& os, Token_Class tc)
 
 Token::Token() {}
 Token::Token(Token_Class n_tc, const std::string& n_str, unsigned int n_line)
-	:str(n_str), line_num(n_line), tc(n_tc) {}
+	: str(n_str), line_num(n_line), tc(n_tc) {}
 
 Token::Token(Token_Class n_tc, char n_chr, unsigned int n_line)
 	: str(1, n_chr), line_num(n_line), tc(n_tc) {}
@@ -238,8 +238,8 @@ std::vector<Token> lex(std::ifstream& file)
 					}
 					tokens.emplace_back(Token_Class::numb, to_add, line_num);
 					to_add.clear();
+					i--;
 				}
-				i--;
 				break;
 			//strings
 			case '"':

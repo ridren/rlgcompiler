@@ -10,6 +10,7 @@
 
 #define LEXER_DEBUG TOKEN_DEBUG
 #define PARSER_DEBUG NODE_DEBUG & TOKEN_DEBUG
+#define ASM 1
 
 std::vector<Token>     lex(std::ifstream& file);
 Node*                  parse();
@@ -31,7 +32,7 @@ void report_Error(const std::string& err, unsigned int line_num)
 void report_Warning(const std::string& warn, unsigned int line_num)
 {
 	std::cout << "\033[0;35mWARNING: " << warn << '\n';
-	std::cout << "\033[0;38;5;129mON LINE " << line_num << '\n';
+	std::cout << "\033[0;38;5;129mon line " << line_num << '\n';
 	std::cout << "\033[0m";
 }
 
@@ -107,18 +108,24 @@ int main(int argc, char* argv[])
 	//std::cout << "\nx86 asm: \n\n";
 	//std::cout << x86_Gen(tac) << '\n';
 	std::string output = "section\t.data\n"
-	                     "section\t.text\n"
+	                     "\nsection\t.text\n"
 	                     "global \t_start\n"
 	                     "_start:\n"
-	                     "\tjmp Fmain\n";
+	                     "\tcall Fmain\n"
+	                     "\tmov \trdi, rax\n"
+	                     "\tmov \trax, 60\n" 	
+	                     "\tsyscall\n\n";
 	output += x86_Gen(tac);
-
 	write.open("temp.asm");
 	write << output << '\n';
 	write.close();
 	
 	system("nasm -f elf64 -o temp.o temp.asm");
 	system("ld -o program temp.o");
-	system("rm -f temp.asm temp.o");
+	
+#if ! ASM
+	system("rm -f temp.asm");
+#endif
+	system("rm -f temp.o");
 }
 

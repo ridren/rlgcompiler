@@ -9,7 +9,7 @@ void report_Warning(const std::string& warn, unsigned int line_num);
 struct Symbol{
 	std::string name;
 	unsigned int arg_count;
-	bool scope_sign; //used to determine where does scope end
+	bool scope_sign = false; //used to determine where does scope end
 	bool is_var;
 	bool does_return; //to check whether func return value or not
 
@@ -28,6 +28,7 @@ void exit_Scope();
 
 int found_symbol_index = -1;
 bool expects_return = true;
+bool func_returns = false;
 
 void analyze(Node& node)
 {
@@ -55,13 +56,15 @@ void analyze(Node& node)
 	{
 		Token& token = node.children[1]->tkn;
 		//check for redefinition of func
-		if(check_Scope(token.str, false))
+		if(find_Symbol(token.str, false))
 		{
 			report_Error(token.str + " REDEFINITION", token.line_num);
 			return;
 		}
 		//if no definition, add func
-		push_Symbol(node.children[1]->tkn.str, false, node.children[2]->children.size(), (Token_Class::kint == node.children[0]->tkn.tc));
+		bool returns = Token_Class::kint == node.children[0]->tkn.tc;
+		push_Symbol(node.children[1]->tkn.str, false, node.children[2]->children.size(), returns);
+
 		enter_Scope();
 		//checking and adding params as variables
 		for(auto& param : node.children[2]->children)
@@ -73,9 +76,20 @@ void analyze(Node& node)
 			}
 			push_Symbol(param->tkn.str, true);
 		}
+		func_returns = false;
+
 		//analyze stmnt of func
 		analyze(*node.children[3]);
 	
+		if(returns && !func_returns)
+		{
+			report_Warning(node.children[1]->tkn.str + " should return value", node.children[1]->tkn.line_num);
+		}
+		if(!returns && func_returns)
+		{
+			report_Warning(node.children[1]->tkn.str + " should not return value", node.children[1]->tkn.line_num);
+		}
+
 		exit_Scope();
 		break;
 	}
@@ -97,6 +111,7 @@ void analyze(Node& node)
 			{
 			case Token_Class::kret:
 				analyze(*node.children[1]);
+				func_returns = true;
 				break;
 			case Token_Class::kif:
 				analyze(*node.children[1]);
@@ -222,10 +237,11 @@ void exit_Scope()
 	for(int i = symbols.size() - 1; i >= 0; i--)
 	{
 		if(symbols[i].scope_sign)
+		{
+			symbols.pop_back();
 			break;
-		
+		}
 		symbols.pop_back();
 		
 	}
-	symbols.pop_back();
 }
